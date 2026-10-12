@@ -135,7 +135,18 @@ class OpenRouterLLMClient(BaseLLMClient):
             temperature=self.temperature,
         )
 
-        content = response.choices[0].message.content
+        choices = getattr(response, "choices", None)
+        if not choices or len(choices) == 0:
+            error_msg = getattr(response, "error", None) or "The model provider returned no choices (temporary rate limit or provider timeout)."
+            raise RuntimeError(f"OpenRouter Provider Error: {error_msg}")
+
+        choice = choices[0]
+        content = getattr(choice.message, "content", "") or ""
+
+        # Support reasoning models (e.g. nemotron-nano-omni-reasoning)
+        if not content.strip() and hasattr(choice.message, "reasoning") and choice.message.reasoning:
+            content = choice.message.reasoning
+
         return content or ""
 
 

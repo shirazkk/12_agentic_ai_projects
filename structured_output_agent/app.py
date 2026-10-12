@@ -93,10 +93,9 @@ api_key = st.sidebar.text_input(
 default_model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
 model_options = [
     default_model,
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "google/gemini-2.0-flash-lite-preview-02-05:free",
-    "meta-llama/llama-3.2-11b-vision-instruct:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",  # Active Free Multimodal/Vision Model
+    "nvidia/nemotron-3-super-120b-a12b:free",              # Text Model
+    "google/gemma-4-26b-a4b-it:free",
     "openai/gpt-4o-mini",
 ]
 # Remove duplicates while preserving order
@@ -107,13 +106,13 @@ selected_model = st.sidebar.selectbox(
     "Active Model",
     options=unique_models,
     index=0,
-    help="Select or switch models. For receipt images, choose a vision-capable model like gemini or llama-3.2-vision.",
+    help="Select or switch models. For receipt photos, choose 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free'.",
 )
 
 custom_model = st.sidebar.text_input(
     "Or Enter Custom Model ID",
     value="",
-    placeholder="e.g. anthropic/claude-3.5-sonnet",
+    placeholder="e.g. nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
 )
 final_model = custom_model.strip() if custom_model.strip() else selected_model
 
@@ -123,9 +122,9 @@ temperature = st.sidebar.slider("Temperature", min_value=0.0, max_value=1.0, val
 st.sidebar.markdown("---")
 st.sidebar.markdown(
     "💡 **Vision Tip:**\n"
-    "`nvidia/nemotron-3-super` is **text-only**.\n"
-    "If uploading a photo of a receipt, switch the model to a free vision model such as:\n"
-    "`google/gemini-2.0-flash-lite-preview-02-05:free`"
+    "`nvidia/nemotron-3-super` is text-only.\n"
+    "When uploading receipt photos, select the active free vision model:\n"
+    "👉 **`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`**"
 )
 
 # --- Sample Presets ---
@@ -217,11 +216,11 @@ with tab_image:
                 "Additional instructions (optional):",
                 value="Extract all invoice details from this receipt image.",
             )
-            if "vision" not in final_model.lower() and "gemini" not in final_model.lower():
+            if "omni" not in final_model.lower() and "vision" not in final_model.lower() and "gemma" not in final_model.lower():
                 st.warning(
-                    f"⚠️ Current model '{final_model}' might not support images. "
-                    "If extraction fails, switch the active model in the sidebar to "
-                    "`google/gemini-2.0-flash-lite-preview-02-05:free`."
+                    f"⚠️ Current model '{final_model}' is text-only. "
+                    "For photos of receipts, switch the model in the sidebar to the active free vision model:\n"
+                    "👉 **`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`**"
                 )
         elif file_ext == "txt":
             file_text = uploaded_file.getvalue().decode("utf-8")
